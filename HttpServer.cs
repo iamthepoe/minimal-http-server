@@ -28,6 +28,7 @@ class HttpServer
         {
             Socket connection = await this.Controller.AcceptSocketAsync();
             this.RequestsLength++;
+            Task task = Task.Run(() => ProcessRequest(connection, this.RequestsLength));
         }
     }
 
