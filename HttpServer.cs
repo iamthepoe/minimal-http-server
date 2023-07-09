@@ -15,6 +15,8 @@ class HttpServer
             this.Controller = new TcpListener(IPAddress.Parse("127.0.0.1"), this.Port);
             this.Controller.Start();
             Console.WriteLine($"Server running at http://localhost:{this.Port}");
+            Task httpServerTask = Task.Run(() => AwaitRequests());
+            httpServerTask.GetAwaiter().GetResult();
         }
         catch (Exception e)
         {
