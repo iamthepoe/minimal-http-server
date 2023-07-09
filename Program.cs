@@ -1,2 +1,10 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿namespace SimpleHttpServer
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var httpServer = new HttpServer();
+        }
+    }
+}
