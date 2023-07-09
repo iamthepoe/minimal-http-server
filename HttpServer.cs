@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using System.Net;
+using System.Text;
 
 class HttpServer
 {
@@ -28,5 +29,25 @@ class HttpServer
             Socket connection = await this.Controller.AcceptSocketAsync();
             this.RequestsLength++;
         }
+    }
+
+    private void ProcessRequest(Socket connection, int requestNumber)
+    {
+        Console.WriteLine($"Processing request #{requestNumber}");
+        if (connection.Connected)
+        {
+            byte[] requestBytes = new Byte[1024];
+            connection.Receive(requestBytes, requestBytes.Length, 0);
+            string requestText = Encoding.UTF8.GetString(requestBytes)
+              .Replace((char)0, ' ').Trim();
+
+            if (requestText.Length > 0)
+            {
+                Console.WriteLine($"\n{requestText}\n");
+                connection.Close();
+            }
+        }
+
+        Console.WriteLine($"\nRequest #{requestNumber} finalized.");
     }
 }
