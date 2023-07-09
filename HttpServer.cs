@@ -12,6 +12,7 @@ namespace SimpleHttpServer
 
         public HttpServer(int port = 8080)
         {
+            this.Port = port;
             try
             {
                 this.Controller = new TcpListener(IPAddress.Parse("127.0.0.1"), this.Port);
