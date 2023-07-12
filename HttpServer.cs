@@ -50,7 +50,12 @@ namespace SimpleHttpServer
                 if (requestText.Length > 0)
                 {
                     Console.WriteLine($"\n{requestText}\n");
+                    var headerBytes = CreateHeader("HTTP/1.1", "text/html;charset=utf-8",
+                        "200", 0);
+                    int sendedBytes = connection.Send(headerBytes, headerBytes.Length, 0);
                     connection.Close();
+
+                    Console.WriteLine($"\n{sendedBytes} bytes sended for requisition #{requestNumber}");
                 }
             }
 
