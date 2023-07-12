@@ -41,36 +41,36 @@ namespace SimpleHttpServer
         private void ProcessRequest(Socket connection, int requestNumber)
         {
             Console.WriteLine($"Processing request #{requestNumber}");
-            if (connection.Connected)
-            {
-                byte[] requestBytes = new Byte[1024];
-                connection.Receive(requestBytes, requestBytes.Length, 0);
-                string requestText = Encoding.UTF8.GetString(requestBytes)
-                  .Replace((char)0, ' ').Trim();
 
-                if (requestText.Length > 0)
-                {
-                    Console.WriteLine($"\n{requestText}\n");
+            if (!connection.Connected) return;
 
-                    string resource = GetRequestInfo(requestText, "resource");
+            byte[] requestBytes = new Byte[1024];
+            connection.Receive(requestBytes, requestBytes.Length, 0);
 
-                    var contentBytes = ReadFile(resource);
+            string requestText = Encoding.UTF8.GetString(requestBytes)
+              .Replace((char)0, ' ').Trim();
 
-                    if (contentBytes.Length == 0)
-                        contentBytes = ReadFile("/404.html");
+            if (requestText.Length <= 0) return;
 
-                    var headerBytes = CreateHeader("HTTP/1.1", "text/html;charset=utf-8",
-                        "200", contentBytes.Length);
+            Console.WriteLine($"\n{requestText}\n");
 
-                    int sendedBytes = connection.Send(headerBytes, headerBytes.Length, 0);
+            string resource = GetRequestInfo(requestText, "resource");
 
-                    sendedBytes += connection.Send(contentBytes, contentBytes.Length, 0);
+            var contentBytes = ReadFile(resource);
 
-                    connection.Close();
+            if (contentBytes.Length == 0)
+                contentBytes = ReadFile("/404.html");
 
-                    Console.WriteLine($"\n{sendedBytes} bytes sended for requisition #{requestNumber}");
-                }
-            }
+            var headerBytes = CreateHeader("HTTP/1.1", "text/html;charset=utf-8",
+                "200", contentBytes.Length);
+
+            int sendedBytes = connection.Send(headerBytes, headerBytes.Length, 0);
+
+            sendedBytes += connection.Send(contentBytes, contentBytes.Length, 0);
+
+            connection.Close();
+
+            Console.WriteLine($"\n{sendedBytes} bytes sended for requisition #{requestNumber}");
 
             Console.WriteLine($"\nRequest #{requestNumber} finalized.");
         }
