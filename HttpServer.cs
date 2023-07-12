@@ -15,6 +15,7 @@ namespace SimpleHttpServer
         public HttpServer(int port = 8080)
         {
             this.Port = port;
+            this.SetupMimeTypes();
             try
             {
                 this.Controller = new TcpListener(IPAddress.Parse("127.0.0.1"), this.Port);
@@ -118,6 +119,23 @@ namespace SimpleHttpServer
                 default:
                     return match.Groups[3].Value;
             }
+        }
+
+        private void SetupMimeTypes()
+        {
+            this.MimeTypes = new SortedList<string, string>();
+            this.MimeTypes.Add(".html", "text/html;charset=utf-8");
+            this.MimeTypes.Add(".htm", "text/html;charset=utf-8");
+            this.MimeTypes.Add(".css", "text/css");
+            this.MimeTypes.Add(".js", "text/javascript");
+            this.MimeTypes.Add(".png", "image/png");
+            this.MimeTypes.Add(".jpg", "image/jpeg");
+            this.MimeTypes.Add(".gif", "image/gif");
+            this.MimeTypes.Add(".svg", "image/svg+xml");
+            this.MimeTypes.Add(".webp", "image/webp");
+            this.MimeTypes.Add(".ico", "image/ico");
+            this.MimeTypes.Add(".woff", "font/woff");
+            this.MimeTypes.Add(".woff2", "font/woff2");
         }
     }
 }
