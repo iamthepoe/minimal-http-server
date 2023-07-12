@@ -55,10 +55,17 @@ namespace SimpleHttpServer
                     string resource = GetRequestInfo(requestText, "resource");
 
                     var contentBytes = ReadFile(resource);
+
+                    if (contentBytes.Length == 0)
+                        contentBytes = ReadFile("/404.html");
+
                     var headerBytes = CreateHeader("HTTP/1.1", "text/html;charset=utf-8",
                         "200", contentBytes.Length);
+
                     int sendedBytes = connection.Send(headerBytes, headerBytes.Length, 0);
+
                     sendedBytes += connection.Send(contentBytes, contentBytes.Length, 0);
+
                     connection.Close();
 
                     Console.WriteLine($"\n{sendedBytes} bytes sended for requisition #{requestNumber}");
