@@ -56,5 +56,16 @@ namespace SimpleHttpServer
 
             Console.WriteLine($"\nRequest #{requestNumber} finalized.");
         }
+
+        public byte[] CreateHeader(string httpVersion, string mimeType,
+            string code, int bytesLength)
+        {
+            StringBuilder text = new StringBuilder();
+            text.Append($"{httpVersion} {code}{Environment.NewLine}");
+            text.Append($"Server: Simple Http Server 1.0{Environment.NewLine}");
+            text.Append($"Content-Type: {mimeType}{Environment.NewLine}");
+            text.Append($"Content-Length: {bytesLength}{Environment.NewLine}{Environment.NewLine}");
+            return Encoding.UTF8.GetBytes(text.ToString());
+        }
     }
 }
