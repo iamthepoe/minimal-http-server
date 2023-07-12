@@ -10,6 +10,7 @@ namespace SimpleHttpServer
         private TcpListener Controller { get; set; }
         private int Port { get; set; }
         private int RequestsLength { get; set; }
+        private SortedList<string, string> MimeTypes { get; set; }
 
         public HttpServer(int port = 8080)
         {
@@ -75,7 +76,7 @@ namespace SimpleHttpServer
             Console.WriteLine($"\nRequest #{requestNumber} finalized.");
         }
 
-        public byte[] CreateHeader(string httpVersion, string mimeType,
+        private byte[] CreateHeader(string httpVersion, string mimeType,
             string code, int bytesLength)
         {
             StringBuilder text = new StringBuilder();
@@ -86,7 +87,7 @@ namespace SimpleHttpServer
             return Encoding.UTF8.GetBytes(text.ToString());
         }
 
-        public byte[] ReadFile(string source)
+        private byte[] ReadFile(string source)
         {
             string path = Path.GetFullPath("./www" + source);
 
@@ -96,7 +97,7 @@ namespace SimpleHttpServer
                 return new Byte[0];
         }
 
-        public string GetRequestInfo(string requestText, string item)
+        private string GetRequestInfo(string requestText, string item)
         {
             Regex regex = new Regex(@"^([A-Z]+)\s+([^ ]+)\s+HTTP/(\d\.\d)", RegexOptions.IgnoreCase);
             Match match = regex.Match(requestText);
