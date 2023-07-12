@@ -47,11 +47,14 @@ namespace SimpleHttpServer
                 connection.Receive(requestBytes, requestBytes.Length, 0);
                 string requestText = Encoding.UTF8.GetString(requestBytes)
                   .Replace((char)0, ' ').Trim();
+
                 if (requestText.Length > 0)
                 {
                     Console.WriteLine($"\n{requestText}\n");
 
-                    var contentBytes = ReadFile("index.html");
+                    string resource = GetRequestInfo(requestText, "resource");
+
+                    var contentBytes = ReadFile(resource);
                     var headerBytes = CreateHeader("HTTP/1.1", "text/html;charset=utf-8",
                         "200", contentBytes.Length);
                     int sendedBytes = connection.Send(headerBytes, headerBytes.Length, 0);
@@ -78,7 +81,7 @@ namespace SimpleHttpServer
 
         public byte[] ReadFile(string source)
         {
-            string path = Path.GetFullPath("./www/" + source);
+            string path = Path.GetFullPath("./www" + source);
 
             if (File.Exists(path))
                 return File.ReadAllBytes(path);
@@ -100,6 +103,8 @@ namespace SimpleHttpServer
                     return match.Groups[1].Value;
 
                 case "resource":
+                    if (match.Groups[2].Value == "/") return "/index.html";
+
                     return match.Groups[2].Value;
 
                 default:
