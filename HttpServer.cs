@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SimpleHttpServer
 {
@@ -46,7 +47,6 @@ namespace SimpleHttpServer
                 connection.Receive(requestBytes, requestBytes.Length, 0);
                 string requestText = Encoding.UTF8.GetString(requestBytes)
                   .Replace((char)0, ' ').Trim();
-
                 if (requestText.Length > 0)
                 {
                     Console.WriteLine($"\n{requestText}\n");
@@ -84,6 +84,27 @@ namespace SimpleHttpServer
                 return File.ReadAllBytes(path);
             else
                 return new Byte[0];
+        }
+
+        public string GetRequestInfo(string requestText, string item)
+        {
+            Regex regex = new Regex(@"^([A-Z]+)\s+([^ ]+)\s+HTTP/(\d\.\d)", RegexOptions.IgnoreCase);
+            Match match = regex.Match(requestText);
+
+            if (!match.Success)
+                return "";
+
+            switch (item)
+            {
+                case "method":
+                    return match.Groups[1].Value;
+
+                case "resource":
+                    return match.Groups[2].Value;
+
+                default:
+                    return match.Groups[3].Value;
+            }
         }
     }
 }
