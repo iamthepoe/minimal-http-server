@@ -11,11 +11,14 @@ namespace SimpleHttpServer
         private int Port { get; set; }
         private int RequestsLength { get; set; }
         private SortedList<string, string> MimeTypes { get; set; }
+        private SortedList<string, Byte[]> HttpCode { get; set; }
 
         public HttpServer(int port = 8080)
         {
             this.Port = port;
             this.SetupMimeTypes();
+            this.SetupHttpCodes();
+
             try
             {
                 this.Controller = new TcpListener(IPAddress.Parse("127.0.0.1"), this.Port);
@@ -42,6 +45,9 @@ namespace SimpleHttpServer
 
         private void ProcessRequest(Socket connection, int requestNumber)
         {
+            byte[] headerBytes = null;
+            byte[] contentBytes = null;
+
             Console.WriteLine($"Processing request #{requestNumber}");
 
             if (!connection.Connected) return;
@@ -56,14 +62,13 @@ namespace SimpleHttpServer
 
             Console.WriteLine($"\n{requestText}\n");
 
-            string resource = GetRequestInfo(requestText, "resource");
+            var content = ProcessContent(requestText);
 
-            var contentBytes = ReadFile(resource);
+            contentBytes = content.Item1;
 
-            if (contentBytes.Length == 0)
-                contentBytes = ReadFile("/404.html");
+            string mimeType = content.Item2;
 
-            var headerBytes = CreateHeader("HTTP/1.1", "text/html;charset=utf-8",
+            headerBytes = CreateHeader("HTTP/1.1", mimeType,
                 "200", contentBytes.Length);
 
             int sendedBytes = connection.Send(headerBytes, headerBytes.Length, 0);
@@ -88,14 +93,32 @@ namespace SimpleHttpServer
             return Encoding.UTF8.GetBytes(text.ToString());
         }
 
-        private byte[] ReadFile(string source)
+        private Tuple<Byte[], string> ProcessContent(string requestText)
         {
-            string path = Path.GetFullPath("./www" + source);
 
-            if (File.Exists(path))
-                return File.ReadAllBytes(path);
-            else
-                return new Byte[0];
+            string resource = GetRequestInfo(requestText, "resource");
+            FileInfo file = new FileInfo(FindFile(resource));
+            string extension = file.Extension.ToLower();
+
+            if (!file.Exists)
+                return new Tuple<Byte[], string>(HttpCode["404"], "text/html;charset=utf-8");
+
+            if (!MimeTypes.ContainsKey(extension))
+                return new Tuple<Byte[], string>(HttpCode["415"], "text/html;charset=utf-8");
+
+
+            return new Tuple<Byte[], string>(ReadFile(file.FullName), MimeTypes[extension]);
+        }
+
+        private string FindFile(string searchedResource)
+        {
+            return Path.GetFullPath("./www" + searchedResource);
+        }
+
+        private byte[] ReadFile(string path)
+        {
+            if (!File.Exists(path)) return new Byte[0];
+            return File.ReadAllBytes(path);
         }
 
         private string GetRequestInfo(string requestText, string item)
@@ -136,6 +159,14 @@ namespace SimpleHttpServer
             this.MimeTypes.Add(".ico", "image/ico");
             this.MimeTypes.Add(".woff", "font/woff");
             this.MimeTypes.Add(".woff2", "font/woff2");
+        }
+
+        private void SetupHttpCodes()
+        {
+            string path = Path.GetFullPath("./www/code");
+            this.HttpCode = new SortedList<string, byte[]>();
+            this.HttpCode.Add("404", ReadFile($"{path}/404.html"));
+            this.HttpCode.Add("415", ReadFile($"{path}/415.html"));
         }
     }
 }
