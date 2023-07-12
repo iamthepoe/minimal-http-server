@@ -50,9 +50,12 @@ namespace SimpleHttpServer
                 if (requestText.Length > 0)
                 {
                     Console.WriteLine($"\n{requestText}\n");
+
+                    var contentBytes = ReadFile("index.html");
                     var headerBytes = CreateHeader("HTTP/1.1", "text/html;charset=utf-8",
-                        "200", 0);
+                        "200", contentBytes.Length);
                     int sendedBytes = connection.Send(headerBytes, headerBytes.Length, 0);
+                    sendedBytes += connection.Send(contentBytes, contentBytes.Length, 0);
                     connection.Close();
 
                     Console.WriteLine($"\n{sendedBytes} bytes sended for requisition #{requestNumber}");
@@ -71,6 +74,16 @@ namespace SimpleHttpServer
             text.Append($"Content-Type: {mimeType}{Environment.NewLine}");
             text.Append($"Content-Length: {bytesLength}{Environment.NewLine}{Environment.NewLine}");
             return Encoding.UTF8.GetBytes(text.ToString());
+        }
+
+        public byte[] ReadFile(string source)
+        {
+            string path = Path.GetFullPath("./www/" + source);
+
+            if (File.Exists(path))
+                return File.ReadAllBytes(path);
+            else
+                return new Byte[0];
         }
     }
 }
