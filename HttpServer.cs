@@ -144,6 +144,24 @@ namespace SimpleHttpServer
             }
         }
 
+        private Byte[] CreateDynamicHTML(string path)
+        {
+            string template = "{{content}}";
+            string htmlModel = File.ReadAllText(path);
+
+            StringBuilder dynamicHTML = new StringBuilder();
+
+            dynamicHTML.Append("<ul>");
+            foreach (var item in this.MimeTypes.Keys)
+            {
+                dynamicHTML.Append($"<li>Files with {item} extension</li>");
+            }
+            dynamicHTML.Append("</ul>");
+
+            string textOfDynamicHTML = htmlModel.Replace(template, dynamicHTML.ToString());
+            return Encoding.UTF8.GetBytes(textOfDynamicHTML, 0, textOfDynamicHTML.Length);
+        }
+
         private void SetupMimeTypes()
         {
             this.MimeTypes = new SortedList<string, string>();
